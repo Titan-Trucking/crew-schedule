@@ -95,6 +95,7 @@ main{padding:16px 0 48px}
 .hcell{background:var(--panel);padding:12px 14px}
 .hnum{display:block;font-size:28px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
 .hlab{font-size:12px;color:var(--muted);line-height:1.3}
+.clk{display:inline-block;margin-top:6px;font-size:13px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:1px 9px}
 .hnote{font-size:12px;color:var(--muted);margin:6px 2px 4px}
 .empty{background:var(--panel);border:1px dashed var(--line);border-radius:10px;padding:20px;text-align:center;color:var(--muted);margin-top:14px}
 </style>
@@ -346,8 +347,8 @@ main{padding:16px 0 48px}
   function renderMine(){
     var name = dev.name, today = akToday(), start = monday(today), html = "";
     var hrs = (data.hours||{})[name] || {}, wks = data.weeks || [];
+    var fh = function(v){ return (Math.round((v||0)*10)/10).toFixed(1); };
     if (wks.length){
-      var fh = function(v){ return (Math.round((v||0)*10)/10).toFixed(1); };
       var thisW = wks[wks.length-1], lastW = wks.length > 1 ? wks[wks.length-2] : null;
       html += '<div class="hours"><div class="hcell"><span class="hnum">'+fh(hrs[thisW])+'</span><span class="hlab">Clocked this week<br>since '+md(thisW)+'</span></div>'+
         (lastW ? '<div class="hcell"><span class="hnum">'+fh(hrs[lastW])+'</span><span class="hlab">Clocked last week<br>'+md(lastW)+' &ndash; '+md(addDays(lastW,6))+'</span></div>' : '')+
@@ -360,7 +361,13 @@ main{padding:16px 0 48px}
         var d = addDays(ws,i);
         var mine = data.shifts.filter(function(s){ return s.d===d && s.n===name; });
         html += '<div class="day'+(d===today?" today":"")+(d<today?" past":"")+'"><div class="dl"><b>'+dow(d)+"</b><span>"+parse(d).getUTCDate()+'</span></div><div class="dr">';
-        html += mine.length ? mine.map(shiftLine).join('<div style="height:8px"></div>') : '<span class="none">Not scheduled</span>';
+        var clk = ((data.daily||{})[name]||{})[d];
+        if (mine.length){
+          html += mine.map(shiftLine).join('<div style="height:8px"></div>');
+          if (clk) html += '<div class="clk">Clocked '+fh(clk)+' hrs</div>';
+        } else if (clk){
+          html += '<span class="t">Clocked '+fh(clk)+' hrs</span><div class="sub">Not on the schedule</div>';
+        } else html += '<span class="none">Not scheduled</span>';
         html += "</div></div>";
       }
       html += "</div>";

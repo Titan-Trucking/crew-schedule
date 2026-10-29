@@ -25,7 +25,7 @@ Phones pick up the change the next time they open the page (GitHub may take a fe
 - `index.html` - the page employees open
 - `admin.html` - admin tools
 - `config.json` - crew PIN, resets and revoked names
-- `schedule.json` - schedule data (names, dates, times, job, truck unit) and weekly clocked-hour totals per person, shown only to that person
+- `schedule.json` - schedule data (names, dates, times, job, truck unit) and clocked hours per person (weekly totals and per day, no punch times), shown only to that person
 - `tools/export.py` - builds `schedule.json` from the scheduling board's data
 
 ## Notes

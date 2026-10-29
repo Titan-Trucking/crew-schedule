@@ -94,7 +94,7 @@ def main():
     for eid, e in emps.items():
         if eid in people:
             keys[eid] = {norm(e.get("name")), norm(e.get("btName"))} - {""}
-    hours = {}
+    hours, daily = {}, {}
     for d in load(os.path.join(db, "days")).values():
         try:
             day = dt.date.fromisoformat(d.get("date", ""))
@@ -109,6 +109,8 @@ def main():
             if h:
                 slot = hours.setdefault(people[eid], {})
                 slot[wk.isoformat()] = round(slot.get(wk.isoformat(), 0) + h, 2)
+                dslot = daily.setdefault(people[eid], {})
+                dslot[day.isoformat()] = round(dslot.get(day.isoformat(), 0) + h, 2)
 
     data = {
         "updated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -116,7 +118,8 @@ def main():
         "shifts": rows,
         "weekStart": ws,
         "weeks": [w.isoformat() for w in weeks],
-        "hours": hours,
+        "hours": hours,      # weekly clocked totals per person
+        "daily": daily,      # clocked hours per person per day (no punch times)
     }
     with open(out, "w") as fh:
         json.dump(data, fh, separators=(",", ":"))

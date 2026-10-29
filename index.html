@@ -87,6 +87,11 @@ main{padding:16px 0 48px}
 .grp{padding:8px 14px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--soft);border-top:1px solid var(--line)}
 .grp:first-child{border-top:0;border-radius:10px 10px 0 0}
 .foot{margin-top:24px;text-align:center}
+.hours{margin-top:4px;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.hcell{background:var(--panel);padding:12px 14px}
+.hnum{display:block;font-size:28px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.hlab{font-size:12px;color:var(--muted);line-height:1.3}
+.hnote{font-size:12px;color:var(--muted);margin:6px 2px 4px}
 .empty{background:var(--panel);border:1px dashed var(--line);border-radius:10px;padding:20px;text-align:center;color:var(--muted);margin-top:14px}
 </style>
 </head>
@@ -307,7 +312,7 @@ main{padding:16px 0 48px}
   function parse(d){ var a=d.split("-"); return new Date(Date.UTC(+a[0],+a[1]-1,+a[2])); }
   function iso(dt){ return dt.toISOString().slice(0,10); }
   function addDays(d,n){ var x=parse(d); x.setUTCDate(x.getUTCDate()+n); return iso(x); }
-  function monday(d){ var x=parse(d), w=(x.getUTCDay()+6)%7; x.setUTCDate(x.getUTCDate()-w); return iso(x); }
+  function monday(d){ var ws = (data && data.weekStart!=null) ? data.weekStart : 1; var x=parse(d), w=(x.getUTCDay()-ws+7)%7; x.setUTCDate(x.getUTCDate()-w); return iso(x); } // start of the board's week
   var DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   var MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   function dow(d){ return DOW[parse(d).getUTCDay()]; }
@@ -336,6 +341,14 @@ main{padding:16px 0 48px}
   }
   function renderMine(){
     var name = dev.name, today = akToday(), start = monday(today), html = "";
+    var hrs = (data.hours||{})[name] || {}, wks = data.weeks || [];
+    if (wks.length){
+      var fh = function(v){ return (Math.round((v||0)*10)/10).toFixed(1); };
+      var thisW = wks[wks.length-1], lastW = wks.length > 1 ? wks[wks.length-2] : null;
+      html += '<div class="hours"><div class="hcell"><span class="hnum">'+fh(hrs[thisW])+'</span><span class="hlab">Clocked this week<br>since '+md(thisW)+'</span></div>'+
+        (lastW ? '<div class="hcell"><span class="hnum">'+fh(hrs[lastW])+'</span><span class="hlab">Clocked last week<br>'+md(lastW)+' &ndash; '+md(addDays(lastW,6))+'</span></div>' : '')+
+        '</div><div class="hnote">Estimate as of the last schedule post. Not your official payroll hours.</div>';
+    }
     for (var w=0; w<2; w++){
       var ws = addDays(start, w*7);
       html += '<div class="wkhead">'+(w===0?"This week":"Next week")+" &middot; "+md(ws)+" &ndash; "+md(addDays(ws,6))+"</div><div class=\"daylist\">";

@@ -9,7 +9,7 @@ reasons are never copied.
 
 Usage: python3 export.py <db_dir> <out_file> [--from YYYY-MM-DD] [--to YYYY-MM-DD]
 """
-import json, glob, os, sys, datetime as dt
+import json, glob, os, re, sys, datetime as dt
 
 def load(dirpath):
     out = {}
@@ -20,12 +20,19 @@ def load(dirpath):
         out[doc_id] = d.get("data", d) if isinstance(d.get("data"), dict) else d
     return out
 
+def norm(n):
+    """Same name normalizing as the board: drop leading *, lowercase, 'Last, First' -> 'first last'."""
+    s = re.sub(r"^\s*\*+\s*", "", str(n or "")).strip().lower()
+    s = re.sub(r"\s+", " ", s)
+    m = re.match(r"^([^,]+),\s*(.+)$", s)
+    return f"{m.group(2)} {m.group(1)}" if m else s
+
 def main():
     args = sys.argv[1:]
     if len(args) < 2:
         sys.exit(__doc__)
     db, out = args[0], args[1]
-    today = dt.datetime.now(dt.timezone(dt.timedelta(hours=-9))).date()  # rough Alaska date; window is generous
+    today = dt.datetime.now(dt.timezone(dt.timedelta(hours=-9))).date()  # Alaska date (AKST/AKDT within an hour)
     start = today - dt.timedelta(days=today.weekday() + 7)   # Monday of last week
     end = today + dt.timedelta(days=28)
     if "--from" in args: start = dt.date.fromisoformat(args[args.index("--from") + 1])
@@ -68,10 +75,48 @@ def main():
         rows.append(row)
 
     rows.sort(key=lambda r: (r["d"], r.get("off", False), r.get("s", ""), r["n"]))
+
+    # Clocked hours per payroll week, matched the same way as the board's Hours tab.
+    # Only weekly totals are copied: no punch times, no per-day detail.
+    cfg_main = {}
+    cfg_path = os.path.join(db, "config", "main.json")
+    if os.path.exists(cfg_path):
+        with open(cfg_path) as fh:
+            c = json.load(fh)
+        cfg_main = c.get("data", c) if isinstance(c.get("data"), dict) else c
+    ws = int(cfg_main.get("weekStart", 0))
+    def week_of(day):  # first day of the payroll week containing `day`
+        py = (day.weekday() + 1) % 7  # Sunday=0 like the board
+        return day - dt.timedelta(days=(py - ws) % 7)
+    this_wk = week_of(today)
+    weeks = [this_wk - dt.timedelta(days=7), this_wk]
+    keys = {}
+    for eid, e in emps.items():
+        if eid in people:
+            keys[eid] = {norm(e.get("name")), norm(e.get("btName"))} - {""}
+    hours = {}
+    for d in load(os.path.join(db, "days")).values():
+        try:
+            day = dt.date.fromisoformat(d.get("date", ""))
+        except ValueError:
+            continue
+        wk = week_of(day)
+        if wk not in weeks:
+            continue
+        by = d.get("byName") or {}
+        for eid, ks in keys.items():
+            h = sum(float((by.get(k) or {}).get("h") or 0) for k in ks if by.get(k))
+            if h:
+                slot = hours.setdefault(people[eid], {})
+                slot[wk.isoformat()] = round(slot.get(wk.isoformat(), 0) + h, 2)
+
     data = {
         "updated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "people": sorted(set(people.values())),
         "shifts": rows,
+        "weekStart": ws,
+        "weeks": [w.isoformat() for w in weeks],
+        "hours": hours,
     }
     with open(out, "w") as fh:
         json.dump(data, fh, separators=(",", ":"))

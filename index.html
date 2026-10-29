@@ -25,9 +25,10 @@ button,select,input{font:inherit;color:inherit}
 h1{font-size:22px;margin:0}
 .muted{color:var(--muted);font-size:14px}
 
-/* PIN */
+/* entry screens */
 #gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px}
-.gatebox{width:100%;max-width:320px;text-align:center;display:flex;flex-direction:column;gap:16px}
+.gatebox{width:100%;max-width:320px;text-align:center;display:flex;flex-direction:column;gap:14px}
+.prompt{font-size:16px}
 .dots{display:flex;justify-content:center;gap:14px;height:18px}
 .dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--muted)}
 .dots i.on{background:var(--ink);border-color:var(--ink)}
@@ -35,20 +36,29 @@ h1{font-size:22px;margin:0}
 .pad button{height:64px;border-radius:12px;border:1px solid var(--line);background:var(--panel);font-size:24px;cursor:pointer}
 .pad button:active{background:var(--soft)}
 .pad .ghost{border:0;background:none;font-size:15px;color:var(--muted)}
+.pad .ok{font-size:16px;font-weight:600;background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.pad .ok:disabled{opacity:.35}
 .err{color:var(--bad);font-size:14px;min-height:20px}
 .shake{animation:sh .3s}
 @keyframes sh{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.names{display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow:auto;text-align:left}
+.names button{min-height:48px;border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:10px 14px;text-align:left;cursor:pointer;font-size:16px}
+.names button:active{background:var(--soft)}
+.btn{min-height:46px;border-radius:10px;border:1px solid var(--line);background:var(--panel);cursor:pointer;padding:10px 14px;font-weight:600}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.linkbtn{border:0;background:none;color:var(--accent);cursor:pointer;padding:8px;font-size:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;text-align:left}
 
 /* app */
 header{position:sticky;top:0;z-index:5;background:var(--panel);border-bottom:1px solid var(--line)}
 .hrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:12px}
+.hrow .who{font-size:14px;color:var(--muted)}
 .tabs{display:flex;gap:4px;margin-top:8px}
 .tabs button{flex:1;border:0;background:none;padding:10px 4px;border-bottom:3px solid transparent;color:var(--muted);font-weight:600;cursor:pointer}
 .tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent)}
 main{padding:16px 0 48px}
-select{width:100%;min-height:44px;border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:8px 10px}
-label.f{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px}
-.daylist{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.daylist{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 .day{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;gap:14px;align-items:flex-start}
 .day.today{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
 .day.past{opacity:.55}
@@ -64,32 +74,25 @@ label.f{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-b
 .tag.u{background:var(--soft);color:var(--ink);font-variant-numeric:tabular-nums}
 .none{color:var(--muted);font-style:italic}
 .wkhead{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:18px 0 0}
+.wkhead:first-child{margin-top:4px}
 .daynav{display:flex;align-items:center;gap:8px}
 .daynav button{min-width:44px;min-height:44px;border:1px solid var(--line);border-radius:8px;background:var(--panel);font-size:20px;cursor:pointer}
 .daynav .lbl{flex:1;text-align:center;font-weight:600}
 .list{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-top:14px}
 .item{display:flex;justify-content:space-between;gap:12px;padding:12px 14px;border-top:1px solid var(--line)}
 .item:first-child{border-top:0}
+.item.me{background:var(--accent-soft)}
 .item .nm{font-weight:600}
 .item .rt{text-align:right;white-space:nowrap}
 .grp{padding:8px 14px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--soft);border-top:1px solid var(--line)}
 .grp:first-child{border-top:0;border-radius:10px 10px 0 0}
 .foot{margin-top:24px;text-align:center}
-.linkbtn{border:0;background:none;color:var(--accent);cursor:pointer;padding:8px;font-size:14px}
 .empty{background:var(--panel);border:1px dashed var(--line);border-radius:10px;padding:20px;text-align:center;color:var(--muted);margin-top:14px}
 </style>
 </head>
 <body>
 
-<div id="gate">
-  <div class="gatebox">
-    <h1>Crew Schedule</h1>
-    <div class="muted">Enter PIN</div>
-    <div class="dots" id="dots"></div>
-    <div class="err" id="err" role="alert"></div>
-    <div class="pad" id="pad"></div>
-  </div>
-</div>
+<div id="gate"><div class="gatebox" id="gbox"></div></div>
 
 <div id="app" hidden>
   <header>
@@ -105,11 +108,7 @@ label.f{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-b
     </div>
   </header>
   <main class="wrap">
-    <section id="tab-me">
-      <label class="f" for="who">Your name</label>
-      <select id="who"></select>
-      <div id="mine"></div>
-    </section>
+    <section id="tab-me"><div id="mine"></div></section>
     <section id="tab-day" hidden>
       <div class="daynav">
         <button id="prev" aria-label="Previous day">&#8249;</button>
@@ -118,76 +117,169 @@ label.f{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-b
       </div>
       <div id="dayout"></div>
     </section>
-    <div class="foot"><button class="linkbtn" id="lock">Lock</button></div>
+    <div class="foot">
+      <div class="muted" id="signedas"></div>
+      <button class="linkbtn" id="lock">Lock</button>
+    </div>
   </main>
 </div>
 
-<script src="config.js"></script>
 <script>
 (function(){
   "use strict";
-  var CFG = window.SCHEDULE_CONFIG || {};
-  var LEN = CFG.pinLength || 4;
-  var KEY_OK = "cs-ok", KEY_WHO = "cs-who";
+  var DEV_KEY = "cs-device";        // this phone's setup: name + personal PIN hash
+  var MAX_TRIES = 5;                // wrong personal PINs before the phone is reset
+  var $ = function(id){ return document.getElementById(id); };
   var store = {
-    get:function(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
-    set:function(k,v){ try{ localStorage.setItem(k,v); }catch(e){} },
+    get:function(k){ try{ return JSON.parse(localStorage.getItem(k)||"null"); }catch(e){ return null; } },
+    set:function(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
     del:function(k){ try{ localStorage.removeItem(k); }catch(e){} }
   };
-  var $ = function(id){ return document.getElementById(id); };
-  var data = null, dayCursor = null;
+  var CFG = null, data = null, dev = null, dayCursor = null;
 
   function sha256(s){
     return crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)).then(function(b){
       return Array.from(new Uint8Array(b)).map(function(x){ return x.toString(16).padStart(2,"0"); }).join("");
     });
   }
+  function randSalt(){ var a=new Uint8Array(12); crypto.getRandomValues(a); return Array.from(a).map(function(x){return x.toString(16).padStart(2,"0");}).join(""); }
+  function esc(s){ return String(s).replace(/[&<>"']/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+  function getJSON(f){ return fetch(f+"?t="+Date.now(),{cache:"no-store"}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }); }
+  function revoked(name){ return (CFG.revoked||[]).indexOf(name) !== -1; }
 
-  // ---------- PIN gate ----------
-  var entry = "";
-  function drawDots(){
-    var h=""; for (var i=0;i<LEN;i++) h += '<i class="'+(i<entry.length?"on":"")+'"></i>';
-    $("dots").innerHTML = h;
+  // Is this phone's saved setup still valid under the admin settings?
+  function deviceValid(d){
+    if (!d || !d.name || !d.pinHash) return "none";
+    if (d.crew !== CFG.crewPinHash) return "crew";          // crew PIN changed: everyone starts over
+    if (revoked(d.name)) return "revoked";
+    var r = (CFG.resets||{})[d.name];
+    if (r && new Date(r) > new Date(d.setAt)) return "reset"; // admin reset this person's PIN
+    return "ok";
   }
-  function buildPad(){
-    var keys = ["1","2","3","4","5","6","7","8","9","","0","del"], h="";
+
+  // ---------- generic keypad ----------
+  function keypad(opts){
+    // opts: title, prompt, len (fixed) or min/max (variable), onDone(pin), extra (html under pad), note
+    var entry = "", fixed = opts.len || 0, max = fixed || opts.max || 6, min = fixed || opts.min || 4;
+    $("gbox").innerHTML =
+      '<h1>'+esc(opts.title||"Crew Schedule")+'</h1>'+
+      '<div class="prompt">'+opts.prompt+'</div>'+
+      '<div class="dots" id="dots"></div>'+
+      '<div class="err" id="err" role="alert">'+(opts.note||"")+'</div>'+
+      '<div class="pad" id="pad"></div>'+(opts.extra||"");
+    var keys = ["1","2","3","4","5","6","7","8","9", fixed ? "" : "ok","0","del"], h="";
     keys.forEach(function(k){
       if (k==="") h += "<span></span>";
       else if (k==="del") h += '<button class="ghost" data-k="del" aria-label="Delete">Delete</button>';
+      else if (k==="ok") h += '<button class="ok" data-k="ok" disabled>OK</button>';
       else h += '<button data-k="'+k+'">'+k+'</button>';
     });
     $("pad").innerHTML = h;
+    function draw(){
+      var n = fixed || Math.max(min, entry.length), s="";
+      for (var i=0;i<n;i++) s += '<i class="'+(i<entry.length?"on":"")+'"></i>';
+      $("dots").innerHTML = s;
+      var ok = $("pad").querySelector(".ok"); if (ok) ok.disabled = entry.length < min;
+    }
+    function press(k){
+      if (k==="ok"){ if (entry.length>=min) finish(); return; }
+      $("err").textContent = "";
+      if (k==="del") entry = entry.slice(0,-1);
+      else if (entry.length < max) entry += k;
+      draw();
+      if (fixed && entry.length===fixed) finish();
+    }
+    function finish(){ var p = entry; entry=""; draw(); opts.onDone(p); }
+    $("pad").onclick = function(e){ var b=e.target.closest("button"); if (b) press(b.dataset.k); };
+    keyHandler = function(e){
+      if (/^[0-9]$/.test(e.key)) press(e.key);
+      else if (e.key==="Backspace") press("del");
+      else if (e.key==="Enter" && !fixed) press("ok");
+    };
+    draw();
   }
-  function press(k){
-    $("err").textContent = "";
-    if (k==="del") entry = entry.slice(0,-1);
-    else if (entry.length < LEN) entry += k;
-    drawDots();
-    if (entry.length === LEN) check();
+  var keyHandler = null;
+  document.addEventListener("keydown", function(e){ if (!$("gate").hidden && keyHandler) keyHandler(e); });
+  function fail(msg){
+    var e = $("err"); if (e) e.textContent = msg;
+    var g = $("gbox"); g.classList.remove("shake"); void g.offsetWidth; g.classList.add("shake");
   }
-  function check(){
-    var tryPin = entry;
-    sha256("crew-schedule:" + tryPin).then(function(h){
-      if (h === CFG.pinHash){ store.set(KEY_OK, CFG.pinHash); openApp(); }
-      else {
-        entry = ""; drawDots();
-        $("err").textContent = "Wrong PIN. Try again.";
-        var g = $("gate").firstElementChild; g.classList.remove("shake"); void g.offsetWidth; g.classList.add("shake");
-      }
-    });
+  function showGate(){ $("app").hidden = true; $("gate").hidden = false; window.scrollTo(0,0); }
+
+  // ---------- step 1: crew PIN ----------
+  function crewStep(note){
+    showGate();
+    keypad({ prompt:"Enter the crew PIN", len: CFG.crewPinLength||4, note: note||"", onDone:function(p){
+      sha256("crew-schedule:"+p).then(function(h){
+        if (h === CFG.crewPinHash) nameStep(); else fail("Wrong PIN. Try again.");
+      });
+    }});
   }
-  $("pad").addEventListener("click", function(e){ var b=e.target.closest("button"); if (b) press(b.dataset.k); });
-  document.addEventListener("keydown", function(e){
-    if (!$("app").hidden) return;
-    if (/^[0-9]$/.test(e.key)) press(e.key);
-    else if (e.key==="Backspace") press("del");
-  });
+
+  // ---------- step 2: pick your name ----------
+  function nameStep(){
+    keyHandler = null;
+    var names = (data.people||[]).filter(function(n){ return !revoked(n); });
+    $("gbox").innerHTML = '<h1>Who are you?</h1><div class="muted">Pick your name. This phone will be set up for you.</div>'+
+      '<div class="names" id="names">'+names.map(function(n){ return '<button data-n="'+esc(n)+'">'+esc(n)+'</button>'; }).join("")+'</div>'+
+      '<button class="linkbtn" id="back">Back</button>';
+    $("names").onclick = function(e){ var b=e.target.closest("button"); if (b) createStep(b.dataset.n); };
+    $("back").onclick = function(){ crewStep(); };
+  }
+
+  // ---------- step 3: create a personal PIN ----------
+  function createStep(name, first){
+    keypad({ title:"Make your PIN", prompt: first ? "Enter it again to confirm" : esc(name)+", pick a 4 to 6 digit PIN for this phone",
+      min:4, max:6, extra:'<button class="linkbtn" id="back">Back</button>', onDone:function(p){
+        if (!first){
+          if (/^(\d)\1+$/.test(p) || "0123456789".indexOf(p) !== -1) { fail("Too easy to guess. Pick another."); return; }
+          createStep(name, p); return;
+        }
+        if (p !== first){ createStep(name); setTimeout(function(){ fail("PINs didn't match. Start again."); },0); return; }
+        var salt = randSalt();
+        sha256(salt+":"+p).then(function(h){
+          dev = { name:name, pinHash:h, salt:salt, crew:CFG.crewPinHash, setAt:new Date().toISOString(), tries:0 };
+          store.set(DEV_KEY, dev);
+          openApp();
+        });
+      }});
+    $("back").onclick = function(){ first ? createStep(name) : nameStep(); };
+  }
+
+  // ---------- returning visit: personal PIN ----------
+  function personalStep(){
+    showGate();
+    keypad({ title:"Hi, "+dev.name.split(" ")[0], prompt:"Enter your PIN", min:4, max:6,
+      extra:'<button class="linkbtn" id="forgot">Forgot PIN?</button>', onDone:function(p){
+        sha256(dev.salt+":"+p).then(function(h){
+          if (h === dev.pinHash){ dev.tries = 0; store.set(DEV_KEY, dev); openApp(); return; }
+          dev.tries = (dev.tries||0) + 1; store.set(DEV_KEY, dev);
+          if (dev.tries >= MAX_TRIES){ wipe(); crewStep("Too many wrong tries. Start again with the crew PIN."); return; }
+          fail("Wrong PIN. " + (MAX_TRIES - dev.tries) + " tries left.");
+        });
+      }});
+    $("forgot").onclick = forgotStep;
+  }
+
+  function forgotStep(){
+    keyHandler = null;
+    $("gbox").innerHTML = '<div class="card"><b>Reset this phone?</b>'+
+      '<div class="muted">Your PIN will be cleared. You\'ll need the crew PIN to set up again and make a new PIN.</div>'+
+      '<button class="btn primary" id="yes">Reset and start over</button>'+
+      '<button class="btn" id="no">Cancel</button></div>';
+    $("yes").onclick = function(){ wipe(); crewStep(); };
+    $("no").onclick = personalStep;
+  }
+
+  function messageStep(title, body){
+    keyHandler = null; showGate();
+    $("gbox").innerHTML = '<h1>'+esc(title)+'</h1><div class="muted">'+esc(body)+'</div>';
+  }
+
+  function wipe(){ store.del(DEV_KEY); dev = null; }
 
   // ---------- dates ----------
-  function akToday(){
-    var p = new Intl.DateTimeFormat("en-CA",{timeZone:"America/Anchorage",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
-    return p; // YYYY-MM-DD
-  }
+  function akToday(){ return new Intl.DateTimeFormat("en-CA",{timeZone:"America/Anchorage",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date()); }
   function parse(d){ var a=d.split("-"); return new Date(Date.UTC(+a[0],+a[1]-1,+a[2])); }
   function iso(dt){ return dt.toISOString().slice(0,10); }
   function addDays(d,n){ var x=parse(d); x.setUTCDate(x.getUTCDate()+n); return iso(x); }
@@ -196,78 +288,58 @@ label.f{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-b
   var MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   function dow(d){ return DOW[parse(d).getUTCDay()]; }
   function md(d){ var x=parse(d); return MON[x.getUTCMonth()]+" "+x.getUTCDate(); }
-  function t12(t){
-    if (!t) return "";
-    var a=t.split(":"), h=+a[0], m=a[1]||"00", ap=h>=12?"pm":"am"; h=h%12||12;
-    return h+(m==="00"?"":":"+m)+ap;
-  }
-  function esc(s){ return String(s).replace(/[&<>"']/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+  function t12(t){ if (!t) return ""; var a=t.split(":"), h=+a[0], m=a[1]||"00", ap=h>=12?"pm":"am"; h=h%12||12; return h+(m==="00"?"":":"+m)+ap; }
 
   function shiftLine(s){
     if (s.off) return '<span class="t">Off</span>';
-    var h = '<span class="t">'+esc(t12(s.s))+" &ndash; "+esc(t12(s.e))+"</span>";
-    if (s.night) h += '<span class="tag n">Night</span>';
-    var sub = [];
-    if (s.j) sub.push(esc(s.j));
-    var out = h;
-    if (sub.length || s.u) out += '<div class="sub">'+sub.join(" &middot; ")+(s.u?'<span class="tag u">Truck '+esc(s.u)+"</span>":"")+"</div>";
+    var out = '<span class="t">'+esc(t12(s.s))+" &ndash; "+esc(t12(s.e))+"</span>";
+    if (s.night) out += '<span class="tag n">Night</span>';
+    if (s.j || s.u) out += '<div class="sub">'+esc(s.j||"")+(s.u?'<span class="tag u">Truck '+esc(s.u)+"</span>":"")+"</div>";
     return out;
   }
 
   // ---------- app ----------
   function openApp(){
+    keyHandler = null;
     $("gate").hidden = true; $("app").hidden = false;
-    load();
-  }
-  function load(){
-    fetch("schedule.json?t="+Date.now(), {cache:"no-store"}).then(function(r){
-      if (!r.ok) throw new Error(r.status); return r.json();
-    }).then(function(j){ data=j; render(); }).catch(function(){
-      $("mine").innerHTML = '<div class="empty">Could not load the schedule. Check your connection and refresh.</div>';
-    });
+    $("signedas").textContent = "Signed in as " + dev.name;
+    render();
   }
   function render(){
     var u = new Date(data.updated);
     $("upd").textContent = isNaN(u) ? "" : "Updated " + u.toLocaleString("en-US",{timeZone:"America/Anchorage",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
-    var who = $("who"), cur = store.get(KEY_WHO) || "";
-    who.innerHTML = '<option value="">Pick your name</option>' + data.people.map(function(p){
-      return '<option'+(p===cur?" selected":"")+'>'+esc(p)+"</option>";
-    }).join("");
     renderMine(); renderDay();
   }
   function renderMine(){
-    var name = $("who").value, out = $("mine");
-    if (!name){ out.innerHTML = '<div class="empty">Pick your name to see your shifts.</div>'; return; }
-    var today = akToday(), start = monday(today), html = "";
+    var name = dev.name, today = akToday(), start = monday(today), html = "";
     for (var w=0; w<2; w++){
       var ws = addDays(start, w*7);
-      html += '<div class="wkhead">'+(w===0?"This week":"Next week")+" &middot; "+md(ws)+" &ndash; "+md(addDays(ws,6))+"</div>";
-      html += '<div class="daylist">';
+      html += '<div class="wkhead">'+(w===0?"This week":"Next week")+" &middot; "+md(ws)+" &ndash; "+md(addDays(ws,6))+"</div><div class=\"daylist\">";
       for (var i=0;i<7;i++){
         var d = addDays(ws,i);
         var mine = data.shifts.filter(function(s){ return s.d===d && s.n===name; });
-        var cls = "day" + (d===today?" today":"") + (d<today?" past":"");
-        html += '<div class="'+cls+'"><div class="dl"><b>'+dow(d)+"</b><span>"+parse(d).getUTCDate()+'</span></div><div class="dr">';
+        html += '<div class="day'+(d===today?" today":"")+(d<today?" past":"")+'"><div class="dl"><b>'+dow(d)+"</b><span>"+parse(d).getUTCDate()+'</span></div><div class="dr">';
         html += mine.length ? mine.map(shiftLine).join('<div style="height:8px"></div>') : '<span class="none">Not scheduled</span>';
         html += "</div></div>";
       }
       html += "</div>";
     }
-    out.innerHTML = html;
+    $("mine").innerHTML = html;
   }
   function renderDay(){
     if (!dayCursor) dayCursor = akToday();
     var d = dayCursor, today = akToday();
     $("daylbl").textContent = (d===today ? "Today, " : "") + dow(d) + " " + md(d);
     var all = data.shifts.filter(function(s){ return s.d===d; });
-    var dayS = all.filter(function(s){ return !s.off && !s.night; });
-    var nightS = all.filter(function(s){ return !s.off && s.night; });
-    var offS = all.filter(function(s){ return s.off; });
     if (!all.length){ $("dayout").innerHTML = '<div class="empty">Nothing posted for this day yet.</div>'; return; }
     function rows(list){ return list.map(function(s){
-      if (s.off) return '<div class="item"><div class="nm">'+esc(s.n)+'</div><div class="rt"><span class="tag o">Off</span></div></div>';
-      return '<div class="item"><div><div class="nm">'+esc(s.n)+'</div><div class="sub">'+esc(s.j||"")+'</div></div><div class="rt"><div>'+esc(t12(s.s))+" &ndash; "+esc(t12(s.e))+"</div>"+(s.u?'<span class="tag u">Truck '+esc(s.u)+"</span>":"")+"</div></div>";
+      var me = s.n===dev.name ? " me" : "";
+      if (s.off) return '<div class="item'+me+'"><div class="nm">'+esc(s.n)+'</div><div class="rt"><span class="tag o">Off</span></div></div>';
+      return '<div class="item'+me+'"><div><div class="nm">'+esc(s.n)+'</div><div class="sub">'+esc(s.j||"")+'</div></div><div class="rt"><div>'+esc(t12(s.s))+" &ndash; "+esc(t12(s.e))+"</div>"+(s.u?'<span class="tag u">Truck '+esc(s.u)+"</span>":"")+"</div></div>";
     }).join(""); }
+    var dayS = all.filter(function(s){ return !s.off && !s.night; }),
+        nightS = all.filter(function(s){ return !s.off && s.night; }),
+        offS = all.filter(function(s){ return s.off; });
     var h = '<div class="list">';
     if (dayS.length) h += '<div class="grp">Day shift</div>'+rows(dayS);
     if (nightS.length) h += '<div class="grp">Night shift</div>'+rows(nightS);
@@ -275,7 +347,6 @@ label.f{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-b
     $("dayout").innerHTML = h + "</div>";
   }
 
-  $("who").addEventListener("change", function(){ store.set(KEY_WHO, this.value); renderMine(); });
   $("prev").addEventListener("click", function(){ dayCursor = addDays(dayCursor,-1); renderDay(); });
   $("next").addEventListener("click", function(){ dayCursor = addDays(dayCursor,1); renderDay(); });
   document.querySelector(".tabs").addEventListener("click", function(e){
@@ -283,11 +354,41 @@ label.f{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-b
     document.querySelectorAll(".tabs button").forEach(function(x){ x.setAttribute("aria-selected", x===b?"true":"false"); });
     $("tab-me").hidden = b.dataset.tab!=="me"; $("tab-day").hidden = b.dataset.tab!=="day";
   });
-  $("lock").addEventListener("click", function(){ store.del(KEY_OK); location.reload(); });
-  document.addEventListener("visibilitychange", function(){ if (!document.hidden && data) load(); });
+  $("lock").addEventListener("click", function(){ personalStep(); });
 
-  buildPad(); drawDots();
-  if (CFG.pinHash && store.get(KEY_OK) === CFG.pinHash) openApp();
+  // Re-check admin settings and data whenever the app comes back to the screen.
+  document.addEventListener("visibilitychange", function(){
+    if (document.hidden || $("app").hidden) return;
+    Promise.all([getJSON("config.json"), getJSON("schedule.json")]).then(function(r){
+      CFG = r[0]; data = r[1];
+      if (route()) render();
+    }).catch(function(){});
+  });
+
+  // Decide where this phone starts. Returns true if it may go straight on to the app.
+  function route(){
+    dev = store.get(DEV_KEY);
+    var v = deviceValid(dev);
+    if (v === "ok") return true;
+    var name = dev && dev.name;
+    wipe();
+    if (v === "revoked") messageStep("Access turned off", "This phone no longer has access to the schedule. Talk to your supervisor if you think this is a mistake.");
+    else if (v === "reset") crewStep("Your PIN was reset. Enter the crew PIN to make a new one.");
+    else if (v === "crew") crewStep("The crew PIN has changed. Enter the new one.");
+    else crewStep();
+    return false;
+  }
+
+  function boot(){
+    $("gbox").innerHTML = '<div class="muted">Loading&hellip;</div>';
+    Promise.all([getJSON("config.json"), getJSON("schedule.json")]).then(function(r){
+      CFG = r[0]; data = r[1];
+      if (route()) personalStep();
+    }).catch(function(){
+      $("gbox").innerHTML = '<h1>Crew Schedule</h1><div class="muted">Could not load. Check your connection and refresh.</div>';
+    });
+  }
+  boot();
 })();
 </script>
 </body>

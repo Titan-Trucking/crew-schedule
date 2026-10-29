@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Schedule Admin</title>
+<style>
+:root{--bg:#f4f5f7;--panel:#fff;--ink:#1b1f24;--muted:#626b75;--line:#dcdfe3;--soft:#eceef1;--accent:#2563a8;--accent-ink:#fff;--bad:#b33a2b;--bad-soft:#f8e1dd;--ok:#2f7d4f}
+@media (prefers-color-scheme:dark){:root{--bg:#121417;--panel:#1b1e23;--ink:#e7e9ec;--muted:#9aa3ad;--line:#2d3239;--soft:#24282e;--accent:#6aa6e8;--accent-ink:#0d1520;--bad:#f08a7c;--bad-soft:#41211c;--ok:#6cc48f;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+[hidden]{display:none!important}
+.w{max-width:640px;margin:0 auto;padding:24px 16px 48px;display:flex;flex-direction:column;gap:16px}
+h1{font-size:22px;margin:0}
+h2{font-size:15px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 8px}
+.muted{color:var(--muted);font-size:14px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.row .nm{font-weight:600}
+.row .st{font-size:13px;color:var(--muted)}
+.row .st.bad{color:var(--bad)}
+.acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+button{font:inherit;color:inherit;cursor:pointer;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:6px 10px;min-height:36px;font-size:14px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button.danger{color:var(--bad);border-color:var(--bad)}
+input{font:inherit;color:inherit;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:18px;letter-spacing:.15em;width:9em}
+textarea{width:100%;min-height:150px;font:13px/1.4 ui-monospace,Consolas,monospace;color:inherit;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:10px}
+.changed{border:2px solid var(--accent)}
+ol{margin:6px 0 0;padding-left:20px}
+</style>
+</head>
+<body>
+<div class="w">
+  <div>
+    <h1>Schedule admin</h1>
+    <div class="muted">Changes here take effect after you save them to GitHub (steps at the bottom).</div>
+  </div>
+
+  <div class="panel">
+    <h2>People</h2>
+    <div class="muted" style="margin-bottom:6px"><b>Reset PIN</b> makes that person set up their phone again with the crew PIN. <b>Revoke</b> signs them out and hides their name. To fully lock someone out, also change the crew PIN.</div>
+    <div id="people">Loading&hellip;</div>
+  </div>
+
+  <div class="panel">
+    <h2>Crew PIN</h2>
+    <div class="muted" style="margin-bottom:10px">Changing it signs out every phone. Everyone re-enters the new crew PIN, picks their name and makes a new personal PIN.</div>
+    <input id="newpin" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" placeholder="New PIN">
+    <button class="primary" id="setpin">Set crew PIN</button>
+    <div class="muted" id="pinmsg" style="margin-top:6px"></div>
+  </div>
+
+  <div class="panel" id="outp" hidden>
+    <h2>Save your changes</h2>
+    <ol class="muted">
+      <li>Tap <b>Copy</b>.</li>
+      <li>Open <a id="editlink" target="_blank" rel="noopener">config.json on GitHub</a> (the pencil icon edits it).</li>
+      <li>Select all the text there, paste, and click <b>Commit changes</b>.</li>
+    </ol>
+    <textarea id="out" readonly class="changed" style="margin-top:10px"></textarea>
+    <button class="primary" id="copy" style="margin-top:8px">Copy</button>
+  </div>
+</div>
+<script>
+(function(){
+  var cfg, people = [], $ = function(id){ return document.getElementById(id); };
+  function esc(s){ return String(s).replace(/[&<>"']/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+  function getJSON(f){ return fetch(f+"?t="+Date.now(),{cache:"no-store"}).then(function(r){ return r.json(); }); }
+  var m = location.hostname.match(/^([^.]+)\.github\.io$/), repo = location.pathname.split("/")[1];
+  $("editlink").href = m ? "https://github.com/"+m[1]+"/"+repo+"/edit/main/config.json" : "#";
+
+  function fmt(iso){ var d=new Date(iso); return d.toLocaleString("en-US",{timeZone:"America/Anchorage",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}); }
+  function draw(){
+    var all = people.slice(); (cfg.revoked||[]).forEach(function(n){ if (all.indexOf(n)===-1) all.push(n); }); all.sort();
+    $("people").innerHTML = all.map(function(n){
+      var rv = cfg.revoked.indexOf(n)!==-1, rs = cfg.resets[n];
+      var st = rv ? '<span class="st bad">Revoked</span>' : (rs ? '<span class="st">PIN reset '+esc(fmt(rs))+'</span>' : '<span class="st">Active</span>');
+      return '<div class="row"><div><div class="nm">'+esc(n)+'</div>'+st+'</div><div class="acts">'+
+        (rv ? '<button data-a="restore" data-n="'+esc(n)+'">Restore</button>'
+            : '<button data-a="reset" data-n="'+esc(n)+'">Reset PIN</button><button class="danger" data-a="revoke" data-n="'+esc(n)+'">Revoke</button>')+
+        '</div></div>';
+    }).join("") || '<div class="muted">No names in the schedule yet.</div>';
+  }
+  function changed(){
+    $("out").value = JSON.stringify(cfg, null, 2);
+    $("outp").hidden = false; draw();
+  }
+  $("people").onclick = function(e){
+    var b = e.target.closest("button"); if (!b) return; var n = b.dataset.n;
+    if (b.dataset.a==="reset") cfg.resets[n] = new Date().toISOString();
+    if (b.dataset.a==="revoke"){ if (cfg.revoked.indexOf(n)===-1) cfg.revoked.push(n); }
+    if (b.dataset.a==="restore"){ cfg.revoked = cfg.revoked.filter(function(x){ return x!==n; }); cfg.resets[n] = new Date().toISOString(); }
+    changed();
+  };
+  $("setpin").onclick = async function(){
+    var v = $("newpin").value.trim();
+    if (!/^[0-9]{4,8}$/.test(v)){ $("pinmsg").textContent = "Use 4 to 8 digits."; return; }
+    var b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("crew-schedule:"+v));
+    cfg.crewPinHash = Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");
+    cfg.crewPinLength = v.length; $("newpin").value = "";
+    $("pinmsg").textContent = "New crew PIN ready. Save it below.";
+    changed();
+  };
+  $("copy").onclick = function(){
+    var t = $("out"); t.select();
+    (navigator.clipboard ? navigator.clipboard.writeText(t.value) : Promise.reject()).then(function(){ $("copy").textContent="Copied"; }, function(){ document.execCommand("copy"); $("copy").textContent="Copied"; });
+  };
+  Promise.all([getJSON("config.json"), getJSON("schedule.json")]).then(function(r){
+    cfg = r[0]; cfg.resets = cfg.resets||{}; cfg.revoked = cfg.revoked||[]; people = r[1].people||[]; draw();
+  }).catch(function(){ $("people").textContent = "Could not load settings."; });
+})();
+</script>
+</body>
+</html>

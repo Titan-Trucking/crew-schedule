@@ -128,6 +128,7 @@ main{padding:16px 0 48px}
 (function(){
   "use strict";
   var DEV_KEY = "cs-device";        // this phone's setup: name + personal PIN hash
+  var BIND_KEY = "cs-bound";        // the one name this phone may use
   var MAX_TRIES = 5;                // wrong personal PINs before the phone is reset
   var $ = function(id){ return document.getElementById(id); };
   var store = {
@@ -217,14 +218,37 @@ main{padding:16px 0 48px}
   }
 
   // ---------- step 2: pick your name ----------
+  // The name this phone is locked to. Survives Forgot PIN and PIN resets; only an admin release clears it.
+  function boundName(){
+    var b = store.get(BIND_KEY);
+    if (!b || !b.name) return null;
+    var r = (CFG.releases||{})[b.name];
+    if (r && new Date(r) > new Date(b.at)) { store.del(BIND_KEY); return null; }
+    return b.name;
+  }
   function nameStep(){
     keyHandler = null;
-    var names = (data.people||[]).filter(function(n){ return !revoked(n); });
-    $("gbox").innerHTML = '<h1>Who are you?</h1><div class="muted">Pick your name. This phone will be set up for you.</div>'+
-      '<div class="names" id="names">'+names.map(function(n){ return '<button data-n="'+esc(n)+'">'+esc(n)+'</button>'; }).join("")+'</div>'+
-      '<button class="linkbtn" id="back">Back</button>';
-    $("names").onclick = function(e){ var b=e.target.closest("button"); if (b) createStep(b.dataset.n); };
+    var locked = boundName();
+    if (locked){
+      $("gbox").innerHTML = '<h1>Welcome back</h1><div class="muted">This phone is set up for:</div>'+
+        '<div class="names" id="names"><button data-n="'+esc(locked)+'">'+esc(locked)+'</button></div>'+
+        '<div class="muted">Not you? Ask your supervisor to release this phone.</div>'+
+        '<button class="linkbtn" id="back">Back</button>';
+    } else {
+      var names = (data.people||[]).filter(function(n){ return !revoked(n); });
+      $("gbox").innerHTML = '<h1>Who are you?</h1><div class="muted">Pick your name. This phone will be locked to it.</div>'+
+        '<div class="names" id="names">'+names.map(function(n){ return '<button data-n="'+esc(n)+'">'+esc(n)+'</button>'; }).join("")+'</div>'+
+        '<button class="linkbtn" id="back">Back</button>';
+    }
+    $("names").onclick = function(e){ var b=e.target.closest("button"); if (b) (locked ? createStep(locked) : confirmName(b.dataset.n)); };
     $("back").onclick = function(){ crewStep(); };
+  }
+  function confirmName(name){
+    $("gbox").innerHTML = '<div class="card"><b>Are you '+esc(name)+'?</b>'+
+      '<div class="muted">This phone will be locked to your name. Only a supervisor can change it.</div>'+
+      '<button class="btn primary" id="yes">Yes, that\'s me</button><button class="btn" id="no">Go back</button></div>';
+    $("yes").onclick = function(){ store.set(BIND_KEY, {name:name, at:new Date().toISOString()}); createStep(name); };
+    $("no").onclick = nameStep;
   }
 
   // ---------- step 3: create a personal PIN ----------
@@ -368,9 +392,12 @@ main{padding:16px 0 48px}
   // Decide where this phone starts. Returns true if it may go straight on to the app.
   function route(){
     dev = store.get(DEV_KEY);
+    var locked = boundName();
+    if (dev && locked && dev.name !== locked) dev = null;     // setup must match the locked name
+    if (dev && !locked && deviceValid(dev) === "ok") { store.set(BIND_KEY, {name:dev.name, at:dev.setAt}); locked = dev.name; } // phones set up before name locking
     var v = deviceValid(dev);
+    if (locked && revoked(locked)) v = "revoked";
     if (v === "ok") return true;
-    var name = dev && dev.name;
     wipe();
     if (v === "revoked") messageStep("Access turned off", "This phone no longer has access to the schedule. Talk to your supervisor if you think this is a mistake.");
     else if (v === "reset") crewStep("Your PIN was reset. Enter the crew PIN to make a new one.");

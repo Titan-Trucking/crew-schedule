@@ -40,7 +40,7 @@ ol{margin:6px 0 0;padding-left:20px}
 
   <div class="panel">
     <h2>People</h2>
-    <div class="muted" style="margin-bottom:6px"><b>Reset PIN</b> makes that person set up their phone again with the crew PIN. <b>Revoke</b> signs them out and hides their name. To fully lock someone out, also change the crew PIN.</div>
+    <div class="muted" style="margin-bottom:6px"><b>Reset PIN</b> makes that person set up their phone again with the crew PIN. <b>Release phone</b> frees the phone locked to that name, so it can be set up for someone else. <b>Revoke</b> signs them out and hides their name. To fully lock someone out, also change the crew PIN.</div>
     <div id="people">Loading&hellip;</div>
   </div>
 
@@ -75,11 +75,11 @@ ol{margin:6px 0 0;padding-left:20px}
   function draw(){
     var all = people.slice(); (cfg.revoked||[]).forEach(function(n){ if (all.indexOf(n)===-1) all.push(n); }); all.sort();
     $("people").innerHTML = all.map(function(n){
-      var rv = cfg.revoked.indexOf(n)!==-1, rs = cfg.resets[n];
-      var st = rv ? '<span class="st bad">Revoked</span>' : (rs ? '<span class="st">PIN reset '+esc(fmt(rs))+'</span>' : '<span class="st">Active</span>');
+      var rv = cfg.revoked.indexOf(n)!==-1, rs = cfg.resets[n], rl = cfg.releases[n];
+      var st = rv ? '<span class="st bad">Revoked</span>' : (rl && rl===rs ? '<span class="st">Phone released '+esc(fmt(rl))+'</span>' : rs ? '<span class="st">PIN reset '+esc(fmt(rs))+'</span>' : '<span class="st">Active</span>');
       return '<div class="row"><div><div class="nm">'+esc(n)+'</div>'+st+'</div><div class="acts">'+
         (rv ? '<button data-a="restore" data-n="'+esc(n)+'">Restore</button>'
-            : '<button data-a="reset" data-n="'+esc(n)+'">Reset PIN</button><button class="danger" data-a="revoke" data-n="'+esc(n)+'">Revoke</button>')+
+            : '<button data-a="reset" data-n="'+esc(n)+'">Reset PIN</button><button data-a="release" data-n="'+esc(n)+'">Release phone</button><button class="danger" data-a="revoke" data-n="'+esc(n)+'">Revoke</button>')+
         '</div></div>';
     }).join("") || '<div class="muted">No names in the schedule yet.</div>';
   }
@@ -90,6 +90,7 @@ ol{margin:6px 0 0;padding-left:20px}
   $("people").onclick = function(e){
     var b = e.target.closest("button"); if (!b) return; var n = b.dataset.n;
     if (b.dataset.a==="reset") cfg.resets[n] = new Date().toISOString();
+    if (b.dataset.a==="release"){ var t = new Date().toISOString(); cfg.releases[n] = t; cfg.resets[n] = t; }
     if (b.dataset.a==="revoke"){ if (cfg.revoked.indexOf(n)===-1) cfg.revoked.push(n); }
     if (b.dataset.a==="restore"){ cfg.revoked = cfg.revoked.filter(function(x){ return x!==n; }); cfg.resets[n] = new Date().toISOString(); }
     changed();
@@ -108,7 +109,7 @@ ol{margin:6px 0 0;padding-left:20px}
     (navigator.clipboard ? navigator.clipboard.writeText(t.value) : Promise.reject()).then(function(){ $("copy").textContent="Copied"; }, function(){ document.execCommand("copy"); $("copy").textContent="Copied"; });
   };
   Promise.all([getJSON("config.json"), getJSON("schedule.json")]).then(function(r){
-    cfg = r[0]; cfg.resets = cfg.resets||{}; cfg.revoked = cfg.revoked||[]; people = r[1].people||[]; draw();
+    cfg = r[0]; cfg.resets = cfg.resets||{}; cfg.releases = cfg.releases||{}; cfg.revoked = cfg.revoked||[]; people = r[1].people||[]; draw();
   }).catch(function(){ $("people").textContent = "Could not load settings."; });
 })();
 </script>

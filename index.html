@@ -324,6 +324,7 @@ main{padding:16px 0 48px}
   function md(d){ var x=parse(d); return MON[x.getUTCMonth()]+" "+x.getUTCDate(); }
   function t12(t){ if (!t) return ""; var a=t.split(":"), h=+a[0], m=a[1]||"00", ap=h>=12?"pm":"am"; h=h%12||12; return h+(m==="00"?"":":"+m)+ap; }
 
+  function stamp(iso){ var u=new Date(iso); return isNaN(u) ? "" : u.toLocaleString("en-US",{timeZone:"America/Anchorage",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}); }
   function shiftLine(s){
     if (s.off) return '<span class="t">Off</span>';
     var out = '<span class="t">'+esc(t12(s.s))+" &ndash; "+esc(t12(s.e))+"</span>";
@@ -341,7 +342,7 @@ main{padding:16px 0 48px}
   }
   function render(){
     var u = new Date(data.updated);
-    $("upd").textContent = isNaN(u) ? "" : "Updated " + u.toLocaleString("en-US",{timeZone:"America/Anchorage",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
+    $("upd").textContent = isNaN(u) ? "" : "Posted " + stamp(data.updated);
     renderMine(); renderDay();
   }
   function renderMine(){
@@ -352,7 +353,7 @@ main{padding:16px 0 48px}
       var thisW = wks[wks.length-1], lastW = wks.length > 1 ? wks[wks.length-2] : null;
       html += '<div class="hours"><div class="hcell"><span class="hnum">'+fh(hrs[thisW])+'</span><span class="hlab">Clocked this week<br>since '+md(thisW)+'</span></div>'+
         (lastW ? '<div class="hcell"><span class="hnum">'+fh(hrs[lastW])+'</span><span class="hlab">Clocked last week<br>'+md(lastW)+' &ndash; '+md(addDays(lastW,6))+'</span></div>' : '')+
-        '</div><div class="hnote">Estimate as of the last schedule post. Not your official payroll hours.</div>';
+        '</div><div class="hnote">Estimate as of '+esc(stamp(data.hoursUpdated||data.updated))+'. Not your official payroll hours.</div>';
     }
     for (var w=0; w<2; w++){
       var ws = addDays(start, w*7);

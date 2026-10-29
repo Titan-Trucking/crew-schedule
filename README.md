@@ -28,6 +28,10 @@ Phones pick up the change the next time they open the page (GitHub may take a fe
 - `schedule.json` - schedule data (names, dates, times, job, truck unit) and clocked hours per person (weekly totals and per day, no punch times), shown only to that person
 - `tools/export.py` - builds `schedule.json` from the scheduling board's data
 
+## Updating
+- **update**: refresh clocked hours only (`export.py ... --hours-only`). The posted schedule stays as is.
+- **post schedule**: publish the schedule and hours from the crew board.
+
 ## Notes
 - The name lock lives in the phone's browser. Clearing browser data, a private window, another browser or another phone gets around it.
 - The PIN screens keep casual visitors out. The data files themselves are not encrypted.

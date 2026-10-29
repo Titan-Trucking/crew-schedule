@@ -7,7 +7,10 @@ slimmed-down schedule.json holding only: names, dates, start/end times,
 day/night, job and truck unit. Notes, quals, restrictions and time-off
 reasons are never copied.
 
-Usage: python3 export.py <db_dir> <out_file> [--from YYYY-MM-DD] [--to YYYY-MM-DD]
+Usage: python3 export.py <db_dir> <out_file> [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--hours-only]
+
+--hours-only ("update"): refresh clocked hours in an existing schedule.json and
+leave the posted schedule untouched. Without it ("post schedule"), both are rebuilt.
 """
 import json, glob, os, re, sys, datetime as dt
 
@@ -112,8 +115,20 @@ def main():
                 dslot = daily.setdefault(people[eid], {})
                 dslot[day.isoformat()] = round(dslot.get(day.isoformat(), 0) + h, 2)
 
+    now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    if "--hours-only" in args:
+        with open(out) as fh:
+            data = json.load(fh)
+        data.update({"weekStart": ws, "weeks": [w.isoformat() for w in weeks],
+                     "hours": hours, "daily": daily, "hoursUpdated": now})
+        with open(out, "w") as fh:
+            json.dump(data, fh, separators=(",", ":"))
+        print(f"updated hours in {out}: {len(hours)} people, schedule left as posted {data.get('updated')}")
+        return
+
     data = {
-        "updated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "updated": now,
+        "hoursUpdated": now,
         "people": sorted(set(people.values())),
         "shifts": rows,
         "weekStart": ws,

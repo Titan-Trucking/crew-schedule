@@ -350,9 +350,12 @@ main{padding:16px 0 48px}
     var hrs = (data.hours||{})[name] || {}, wks = data.weeks || [];
     var fh = function(v){ return (Math.round((v||0)*10)/10).toFixed(1); };
     if (wks.length){
-      var thisW = wks[wks.length-1], lastW = wks.length > 1 ? wks[wks.length-2] : null;
-      html += '<div class="hours"><div class="hcell"><span class="hnum">'+fh(hrs[thisW])+'</span><span class="hlab">Clocked this week<br>since '+md(thisW)+'</span></div>'+
-        (lastW ? '<div class="hcell"><span class="hnum">'+fh(hrs[lastW])+'</span><span class="hlab">Clocked last week<br>'+md(lastW)+' &ndash; '+md(addDays(lastW,6))+'</span></div>' : '')+
+      // Label weeks by the real calendar, so a new pay week starting before the next update isn't mislabeled.
+      var curW = monday(today), prevW = addDays(curW,-7);
+      var thisW = curW, lastW = prevW;
+      var lbl = function(w){ return w===curW ? 'Clocked this week<br>since '+md(w) : (w===prevW ? 'Clocked last week<br>' : 'Clocked<br>')+md(w)+' &ndash; '+md(addDays(w,6)); };
+      html += '<div class="hours"><div class="hcell"><span class="hnum">'+fh(hrs[thisW])+'</span><span class="hlab">'+lbl(thisW)+'</span></div>'+
+        '<div class="hcell"><span class="hnum">'+fh(hrs[lastW])+'</span><span class="hlab">'+lbl(lastW)+'</span></div>'+
         '</div><div class="hnote">Estimate as of '+esc(stamp(data.hoursUpdated||data.updated))+'. Not your official payroll hours.</div>';
     }
     for (var w=0; w<2; w++){

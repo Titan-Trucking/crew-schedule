@@ -9,8 +9,8 @@ reasons are never copied.
 
 Usage: python3 export.py <db_dir> <out_file> [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--hours-only]
 
---hours-only ("update"): refresh clocked hours in an existing schedule.json and
-leave the posted schedule untouched. Without it ("post schedule"), both are rebuilt.
+--hours-only ("update"): refresh clocked hours and the name list in an existing
+schedule.json and leave the posted shifts untouched. Without it ("post schedule"), both are rebuilt.
 """
 import json, glob, os, re, sys, datetime as dt
 
@@ -119,7 +119,9 @@ def main():
     if "--hours-only" in args:
         with open(out) as fh:
             data = json.load(fh)
-        data.update({"weekStart": ws, "weeks": [w.isoformat() for w in weeks],
+        # Names are refreshed too, so a new hire can set up their phone after an update.
+        data.update({"people": sorted(set(people.values())), "weekStart": ws,
+                     "weeks": [w.isoformat() for w in weeks],
                      "hours": hours, "daily": daily, "hoursUpdated": now})
         with open(out, "w") as fh:
             json.dump(data, fh, separators=(",", ":"))

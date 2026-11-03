@@ -29,7 +29,7 @@ Phones pick up the change the next time they open the page (GitHub may take a fe
 - `tools/export.py` - builds `schedule.json` from the scheduling board's data
 
 ## Updating
-- **update**: refresh clocked hours only (`export.py ... --hours-only`). The posted schedule stays as is.
+- **update**: refresh clocked hours and the employee name list (`export.py ... --hours-only`). The posted shifts stay as is.
 - **post schedule**: publish the schedule and hours from the crew board.
 
 ## Notes

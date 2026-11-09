@@ -25,7 +25,7 @@ Phones pick up the change the next time they open the page (GitHub may take a fe
 - `index.html` - the page employees open
 - `admin.html` - admin tools
 - `config.json` - crew PIN, resets and revoked names
-- `schedule.json` - schedule data (names, dates, times, job, truck unit) and clocked hours per person (weekly totals and per day, no punch times), shown only to that person
+- `schedule.json` - schedule data (names, dates, times, job, truck unit, shift notes on work shifts) and clocked hours per person (weekly totals and per day, no punch times), shown only to that person
 - `tools/export.py` - builds `schedule.json` from the scheduling board's data
 
 ## Updating
@@ -33,5 +33,6 @@ Phones pick up the change the next time they open the page (GitHub may take a fe
 - **post schedule**: publish the schedule and hours from the crew board.
 
 ## Notes
+- Shift notes typed on the crew board are shown to the whole crew (on the employee's schedule and the day view). Notes on days off and time-off reasons are never published.
 - The name lock lives in the phone's browser. Clearing browser data, a private window, another browser or another phone gets around it.
 - The PIN screens keep casual visitors out. The data files themselves are not encrypted.

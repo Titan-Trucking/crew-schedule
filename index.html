@@ -327,7 +327,7 @@ main{padding:16px 0 48px}
 
   function stamp(iso){ var u=new Date(iso); return isNaN(u) ? "" : u.toLocaleString("en-US",{timeZone:"America/Anchorage",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}); }
   function shiftLine(s){
-    if (s.off) return '<span class="t">Off</span>';
+    if (s.off) return '<span class="t">Off</span>' + (s.nt ? '<div class="snote">'+esc(s.nt)+'</div>' : '');
     var out = '<span class="t">'+esc(t12(s.s))+" &ndash; "+esc(t12(s.e))+"</span>";
     if (s.night) out += '<span class="tag n">Night</span>';
     if (s.j || s.u) out += '<div class="sub">'+esc(s.j||"")+(s.u?'<span class="tag u">Truck '+esc(s.u)+"</span>":"")+"</div>";
@@ -388,7 +388,7 @@ main{padding:16px 0 48px}
     if (!all.length){ $("dayout").innerHTML = '<div class="empty">Nothing posted for this day yet.</div>'; return; }
     function rows(list){ return list.map(function(s){
       var me = s.n===dev.name ? " me" : "";
-      if (s.off) return '<div class="item'+me+'"><div class="nm">'+esc(s.n)+'</div><div class="rt"><span class="tag o">Off</span></div></div>';
+      if (s.off) return '<div class="item'+me+'"><div><div class="nm">'+esc(s.n)+'</div>'+(s.nt?'<div class="snote">'+esc(s.nt)+'</div>':'')+'</div><div class="rt"><span class="tag o">Off</span></div></div>';
       return '<div class="item'+me+'"><div><div class="nm">'+esc(s.n)+'</div><div class="sub">'+esc(s.j||"")+'</div>'+(s.nt?'<div class="snote">'+esc(s.nt)+'</div>':'')+'</div><div class="rt"><div>'+esc(t12(s.s))+" &ndash; "+esc(t12(s.e))+"</div>"+(s.u?'<span class="tag u">Truck '+esc(s.u)+"</span>":"")+"</div></div>";
     }).join(""); }
     var dayS = all.filter(function(s){ return !s.off && !s.night; }),

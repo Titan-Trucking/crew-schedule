@@ -65,8 +65,14 @@ def main():
         name = people.get(s.get("empId"))
         if not name:
             continue
+        # Dispatcher's shift note (e.g. "Standby for nights"). Shown on work shifts and
+        # days off alike. The separate time-off "reason" field is never published.
+        nt = " ".join(str(s.get("note") or "").split())[:300]
         if s.get("off"):
-            rows.append({"d": d, "n": name, "off": True})
+            row = {"d": d, "n": name, "off": True}
+            if nt:
+                row["nt"] = nt
+            rows.append(row)
             continue
         if not s.get("start"):
             continue
@@ -75,8 +81,6 @@ def main():
                "j": (s.get("job") or "").strip(), "u": (t.get("unit") or "").strip()}
         if s.get("period") == "night":
             row["night"] = True
-        # Shift note from the dispatcher (work shifts only; notes on days off stay private).
-        nt = " ".join(str(s.get("note") or "").split())[:300]
         if nt:
             row["nt"] = nt
         rows.append(row)
